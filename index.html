@@ -323,7 +323,11 @@
           );
         }
 
-        var API_URL = 'http://localhost/inventory/public/ApiStokNol';
+        var API_BASE =
+          window.location.hostname === 'localhost'
+            ? 'http://localhost/inventory/public'
+            : 'https://inventory.pms.web.id';
+        var API_URL = API_BASE + '/ApiStokNol';
         var currentFilter = 'fast';
         var maxOut = 1;
         var table;

@@ -264,7 +264,11 @@
 
     <script>
       $(document).ready(function () {
-        var API_URL = 'http://localhost/inventory/public/ApiSync';
+        var API_BASE =
+          window.location.hostname === 'localhost'
+            ? 'http://localhost/inventory/public'
+            : 'https://inventory.pms.web.id';
+        var API_URL = API_BASE + '/ApiSync';
 
         if (localStorage.getItem('vendor_token')) {
           window.location.href = 'index.html';
