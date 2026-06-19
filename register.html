@@ -241,10 +241,20 @@
     </div>
 
     <div class="toast-container-custom" id="toastContainer">
-      <div id="liveToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div
+        id="liveToast"
+        class="toast align-items-center border-0"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
         <div class="d-flex">
           <div class="toast-body" id="toastBody"></div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"
+          ></button>
         </div>
       </div>
     </div>
@@ -274,10 +284,17 @@
         });
 
         function showAlert(type, msg) {
-          var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+          var icon =
+            type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
           var bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
           $('#liveToast').removeClass('bg-success bg-danger').addClass(bgClass);
-          $('#toastBody').html('<i class="fas ' + icon + ' me-2 text-white"></i><span class="text-white">' + msg + '</span>');
+          $('#toastBody').html(
+            '<i class="fas ' +
+              icon +
+              ' me-2 text-white"></i><span class="text-white">' +
+              msg +
+              '</span>',
+          );
           var toast = new bootstrap.Toast($('#liveToast')[0], { delay: 4000 });
           toast.show();
         }
