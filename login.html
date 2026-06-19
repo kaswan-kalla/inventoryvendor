@@ -190,8 +190,8 @@
         var API_BASE =
           window.location.hostname === 'localhost'
             ? 'http://localhost/inventory/public'
-            : 'https://inventory.pms.web.id';
-        var API_URL = API_BASE + '/ApiSync';
+            : window.location.origin;
+        var API_URL = API_BASE + '/proxy.php?endpoint=ApiSync';
 
         // Cek sudah login
         if (localStorage.getItem('vendor_token')) {
