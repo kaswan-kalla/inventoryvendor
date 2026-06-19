@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory - Stok Nol</title>
+    <link rel="icon" href="favicon.ico" />
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- DataTables Bootstrap 5 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"
+    />
+    <style>
+      body {
+        background-color: #f5f6fa;
+        font-size: 0.9rem;
+      }
+
+      .card-header {
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        color: white;
+      }
+
+      .table th {
+        background-color: #2c3e50;
+        color: white;
+        white-space: nowrap;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .table td {
+        vertical-align: middle;
+      }
+
+      .table-hover tbody tr:hover {
+        background-color: #eaf2f8;
+      }
+
+      .badge-stok {
+        font-size: 0.85rem;
+        padding: 4px 10px;
+      }
+
+      .search-box {
+        border-radius: 25px;
+        padding-left: 40px;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+        z-index: 10;
+      }
+
+      .info-stats {
+        background: white;
+        border-radius: 10px;
+        padding: 15px 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .stat-card {
+        text-align: center;
+        padding: 10px;
+      }
+
+      .stat-card .number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+      }
+
+      .stat-card .label {
+        font-size: 0.8rem;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .activity-bar {
+        height: 18px;
+        border-radius: 4px;
+        min-width: 4px;
+        display: inline-block;
+        transition: all 0.2s;
+        vertical-align: middle;
+      }
+
+      .activity-val {
+        font-size: 0.7rem;
+        color: #6c757d;
+        margin-left: 4px;
+      }
+
+      .page-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .loading-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9;
+        border-radius: 8px;
+      }
+
+      @media (max-width: 768px) {
+        .table-responsive {
+          font-size: 0.8rem;
+        }
+
+        .stat-card .number {
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page-wrapper py-3 px-3">
+      <!-- Header -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header py-3">
+          <div
+            class="d-flex justify-content-between align-items-center flex-wrap"
+          >
+            <div>
+              <h4 class="mb-0 fw-bold">
+                <i class="fas fa-boxes me-2"></i>Data Stok Inventory
+              </h4>
+              <small class="opacity-75"
+                ><i class="fas fa-sync-alt me-1"></i>Data real-time dari
+                server</small
+              >
+            </div>
+            <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+              <span class="text-light small" id="vendorInfo"></span>
+              <button class="btn btn-light btn-sm" id="btnRefresh">
+                <i class="fas fa-sync-alt me-1"></i>Refresh Data
+              </button>
+              <button class="btn btn-outline-light btn-sm" id="btnLogout">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="info-stats mb-4">
+        <div class="row g-3">
+          <div class="col-6 col-md">
+            <div class="stat-card">
+              <div class="number" id="stat-total">0</div>
+              <div class="label">Total Item</div>
+            </div>
+          </div>
+          <div class="col-6 col-md">
+            <div class="stat-card">
+              <div class="number">0</div>
+              <div class="label">Stok Tersedia</div>
+            </div>
+          </div>
+          <div class="col-6 col-md">
+            <div class="stat-card">
+              <div class="number" id="stat-filtered">0</div>
+              <div class="label">Item Ditampilkan</div>
+            </div>
+          </div>
+          <div class="col-6 col-md">
+            <div class="stat-card">
+              <div class="number" id="stat-mode">FAST</div>
+              <div class="label">Mode Filter</div>
+            </div>
+          </div>
+          <div class="col-6 col-md">
+            <div class="stat-card">
+              <div class="number" id="stat-klasifikasi">0</div>
+              <div class="label">Klasifikasi</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabel Data -->
+      <div class="card shadow-sm border-0 position-relative">
+        <div class="card-body">
+          <!-- Loading -->
+          <div class="loading-overlay" id="loadingOverlay">
+            <div class="text-center">
+              <div class="spinner-border text-primary mb-2" role="status"></div>
+              <div class="text-muted small">Memuat data...</div>
+            </div>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="row mb-3 align-items-center">
+            <div class="col-md-6 col-lg-4 mb-2 mb-md-0">
+              <div class="position-relative">
+                <i class="fas fa-search search-icon"></i>
+                <input
+                  type="text"
+                  id="searchInput"
+                  class="form-control search-box"
+                  placeholder="Cari item, nama barang, atau spesifikasi..."
+                />
+              </div>
+            </div>
+            <div class="col-md-auto mb-2 mb-md-0">
+              <div class="btn-group btn-group-sm" role="group">
+                <button
+                  type="button"
+                  class="btn btn-success btn-filter"
+                  data-filter="fast"
+                >
+                  <i class="fas fa-bolt me-1"></i>Fast Moving
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-warning btn-filter"
+                  data-filter="slow"
+                >
+                  <i class="fas fa-turtle me-1"></i>Slow Moving
+                </button>
+              </div>
+            </div>
+            <div class="col-md-3 col-lg-2 mb-2 mb-md-0">
+              <select id="filterKlasifikasi" class="form-select">
+                <option value="">Semua Klasifikasi</option>
+              </select>
+            </div>
+            <div class="col-md-3 col-lg-2">
+              <select id="pageLength" class="form-select">
+                <option value="10">10 Baris</option>
+                <option value="25" selected>25 Baris</option>
+                <option value="50">50 Baris</option>
+                <option value="100">100 Baris</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-responsive">
+            <table
+              id="stockTable"
+              class="table table-hover table-bordered table-striped"
+            >
+              <thead>
+                <tr>
+                  <th>Kode Item</th>
+                  <th>Nama Barang</th>
+                  <th>Part #</th>
+                  <th>Merk</th>
+                  <th>Spesifikasi</th>
+                  <th>Satuan</th>
+                  <th>Stok</th>
+                  <th>Klasifikasi</th>
+                  <th>Aktivitas</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-center text-muted mt-3 small">
+        <i class="far fa-clock me-1"></i> Data diperbarui:
+        <span id="updateTime">-</span>
+      </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+      $(document).ready(function () {
+        // Cek autentikasi
+        var token = localStorage.getItem('vendor_token');
+        if (!token) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        // Tampilkan info vendor
+        var vendorData = JSON.parse(
+          localStorage.getItem('vendor_data') || '{}',
+        );
+        if (vendorData.nama_perusahaan) {
+          $('#vendorInfo').html(
+            '<i class="fas fa-building me-1"></i>' +
+              $('<span>').text(vendorData.nama_perusahaan).html(),
+          );
+        } else if (vendorData.email) {
+          $('#vendorInfo').html(
+            '<i class="fas fa-user me-1"></i>' +
+              $('<span>').text(vendorData.email).html(),
+          );
+        }
+
+        var API_URL = 'http://localhost/inventory/public/ApiStokNol';
+        var currentFilter = 'fast';
+        var maxOut = 1;
+        var table;
+
+        // Fungsi ambil data via AJAX
+        function loadData(filter) {
+          currentFilter = filter;
+          $('#loadingOverlay').show();
+
+          $.ajax({
+            url: API_URL + '?filter=' + filter,
+            method: 'GET',
+            dataType: 'json',
+            success: function (response) {
+              if (response.status !== 'OK') {
+                alert('Gagal memuat data dari API.');
+                return;
+              }
+
+              var records = response.records;
+
+              // Hitung max_out untuk skala flag
+              maxOut = 1;
+              records.forEach(function (r) {
+                var v = parseInt(r.out_per_bulan) || 0;
+                if (v > maxOut) maxOut = v;
+              });
+
+              // Update stat
+              $('#stat-total').text(response.count.toLocaleString());
+              $('#stat-mode').text(filter === 'fast' ? 'FAST' : 'SLOW');
+
+              // Hitung jumlah klasifikasi unik
+              var klasList = [];
+              records.forEach(function (r) {
+                var k = (r.klasifikasi || '').trim();
+                if (k && klasList.indexOf(k) === -1) klasList.push(k);
+              });
+              $('#stat-klasifikasi').text(klasList.length.toLocaleString());
+
+              // Update dropdown klasifikasi
+              var $sel = $('#filterKlasifikasi');
+              var prevVal = $sel.val();
+              $sel.find('option:not(:first)').remove();
+              klasList.sort().forEach(function (k) {
+                $sel.append(
+                  '<option value="' +
+                    $('<span>').text(k).html() +
+                    '">' +
+                    $('<span>').text(k).html() +
+                    '</option>',
+                );
+              });
+              if (klasList.indexOf(prevVal) >= 0) {
+                $sel.val(prevVal);
+              } else {
+                $sel.val('');
+              }
+
+              // Bersihkan & isi ulang DataTable
+              table.clear();
+              table.rows.add(records);
+              table.draw();
+
+              // Update waktu
+              var now = new Date();
+              $('#updateTime').text(
+                now.getDate().toString().padStart(2, '0') +
+                  '-' +
+                  (now.getMonth() + 1).toString().padStart(2, '0') +
+                  '-' +
+                  now.getFullYear() +
+                  ' ' +
+                  now.getHours().toString().padStart(2, '0') +
+                  ':' +
+                  now.getMinutes().toString().padStart(2, '0') +
+                  ':' +
+                  now.getSeconds().toString().padStart(2, '0'),
+              );
+
+              // Update tombol filter
+              $('.btn-filter').each(function () {
+                var f = $(this).data('filter');
+                if (f === filter) {
+                  $(this)
+                    .removeClass('btn-outline-success btn-outline-warning')
+                    .addClass(f === 'fast' ? 'btn-success' : 'btn-warning');
+                } else {
+                  $(this)
+                    .removeClass('btn-success btn-warning')
+                    .addClass(
+                      f === 'fast'
+                        ? 'btn-outline-success'
+                        : 'btn-outline-warning',
+                    );
+                }
+              });
+
+              $('#loadingOverlay').hide();
+            },
+            error: function () {
+              alert(
+                'Gagal terhubung ke API. Pastikan server API sedang berjalan.',
+              );
+              $('#loadingOverlay').hide();
+            },
+          });
+        }
+
+        // Inisialisasi DataTable tanpa data
+        table = $('#stockTable').DataTable({
+          pageLength: 25,
+          lengthChange: false,
+          data: [],
+          columns: [
+            {
+              data: 'item_id',
+              render: function (data) {
+                return '<strong>' + $('<span>').text(data).html() + '</strong>';
+              },
+            },
+            {
+              data: 'nama_barang',
+            },
+            {
+              data: 'nomor_part',
+              render: function (data) {
+                return data || '-';
+              },
+            },
+            {
+              data: 'merk',
+              render: function (data) {
+                return data || '-';
+              },
+            },
+            {
+              data: 'spesifikasi',
+            },
+            {
+              data: 'satuan',
+            },
+            {
+              data: 'stok',
+              render: function (data, type) {
+                if (type === 'display') {
+                  return (
+                    '<span class="badge bg-danger badge-stok">' +
+                    data +
+                    '</span>'
+                  );
+                }
+                return data;
+              },
+            },
+            {
+              data: 'klasifikasi',
+            },
+            {
+              data: 'out_per_bulan',
+              render: function (data, type) {
+                if (type === 'display') {
+                  var val = parseInt(data) || 0;
+                  var ratio = maxOut > 0 ? val / maxOut : 0;
+                  var pct = Math.max(3, Math.round(ratio * 100));
+                  var r = Math.round(255 - ratio * 35);
+                  var g = Math.round(193 - ratio * 140);
+                  var b = Math.round(7 + ratio * 62);
+                  return (
+                    '<div class="activity-bar" style="width:' +
+                    pct +
+                    '%;background:rgb(' +
+                    r +
+                    ',' +
+                    g +
+                    ',' +
+                    b +
+                    ')"></div>' +
+                    '<span class="activity-val">' +
+                    val +
+                    'x</span>'
+                  );
+                }
+                return data;
+              },
+            },
+          ],
+          language: {
+            search: '',
+            searchPlaceholder: 'Cari...',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            zeroRecords: 'Tidak ada data ditemukan',
+            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+            infoEmpty: 'Tidak ada data',
+            infoFiltered: '(difilter dari _MAX_ total data)',
+            paginate: {
+              first: 'Pertama',
+              last: 'Terakhir',
+              next: "<i class='fas fa-chevron-right'></i>",
+              previous: "<i class='fas fa-chevron-left'></i>",
+            },
+          },
+          columnDefs: [
+            {
+              searchable: false,
+              targets: [6, 8],
+            },
+          ],
+          order: [[0, 'asc']],
+          drawCallback: function () {
+            var info = this.api().page.info();
+            $('#stat-filtered').text(info.recordsDisplay.toLocaleString());
+          },
+        });
+
+        // Load data pertama kali (default: fast)
+        loadData('fast');
+
+        // Filter buttons
+        $('.btn-filter').on('click', function () {
+          var filter = $(this).data('filter');
+          if (filter !== currentFilter) {
+            loadData(filter);
+          }
+        });
+
+        // Refresh button
+        $('#btnRefresh').on('click', function () {
+          loadData(currentFilter);
+        });
+
+        // Logout
+        $('#btnLogout').on('click', function () {
+          localStorage.removeItem('vendor_token');
+          localStorage.removeItem('vendor_data');
+          window.location.href = 'login.html';
+        });
+
+        // Custom search input
+        $('#searchInput').on('keyup', function () {
+          table.search(this.value).draw();
+        });
+
+        // Filter klasifikasi
+        $('#filterKlasifikasi').on('change', function () {
+          var val = this.value;
+          if (val === '') {
+            table.column(7).search('').draw();
+          } else {
+            table
+              .column(7)
+              .search(
+                '^' + $.fn.dataTable.util.escapeRegex(val) + '$',
+                true,
+                false,
+              )
+              .draw();
+          }
+        });
+
+        // Page length selector
+        $('#pageLength').on('change', function () {
+          table.page.len(parseInt(this.value)).draw();
+        });
+      });
+    </script>
+  </body>
+</html>
