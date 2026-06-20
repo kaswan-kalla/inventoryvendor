@@ -290,6 +290,8 @@
       </div>
     </div>
 
+    <!-- env.js - API Config -->
+    <script src="env.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <!-- Bootstrap 5 JS -->
@@ -323,11 +325,7 @@
           );
         }
 
-        var API_BASE =
-          window.location.hostname === 'localhost'
-            ? 'http://localhost/inventory/public'
-            : window.location.origin;
-        var API_URL = API_BASE + '/proxy.php?endpoint=ApiStokNol';
+        var API_URL = 'proxy.php?endpoint=ApiStokNol';
         var currentFilter = 'fast';
         var maxOut = 1;
         var table;
@@ -338,7 +336,7 @@
           $('#loadingOverlay').show();
 
           $.ajax({
-            url: API_URL + '?filter=' + filter,
+            url: API_URL + '&filter=' + filter,
             method: 'GET',
             dataType: 'json',
             success: function (response) {

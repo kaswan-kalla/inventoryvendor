@@ -3,12 +3,14 @@
 /**
  * Proxy API untuk mengatasi CORS.
  * File ini di-host di domain yang sama dengan frontend (inventoryvendor.pms.web.id)
- * dan meneruskan request ke API backend (inventory.pms.web.id).
+ * dan meneruskan request ke API backend.
  *
  * Penggunaan:
  *   proxy.php?endpoint=ApiStokNol&filter=fast
  *   proxy.php?endpoint=ApiSync/vendorLogin
  */
+
+require_once __DIR__ . '/config.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -28,8 +30,8 @@ if (empty($endpoint)) {
     exit;
 }
 
-// Tentukan base URL backend
-$backendHost = 'https://inventory.pms.web.id';
+// Tentukan base URL backend dari config
+$backendHost = API_BASE_URL;
 $targetUrl = $backendHost . '/' . ltrim($endpoint, '/');
 
 // Forward query string (kecuali 'endpoint')
