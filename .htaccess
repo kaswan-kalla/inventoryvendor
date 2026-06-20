@@ -1,0 +1,4 @@
+# Process env.js through PHP so the server returns real JavaScript
+<Files "env.js">
+    AddHandler application/x-httpd-php .js
+</Files>
