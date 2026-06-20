@@ -11,14 +11,9 @@ if (file_exists($envFile)) {
         if ($line === '' || strpos($line, '#') === 0) continue;
         if (strpos($line, '=') !== false) {
             [$key, $value] = explode('=', $line, 2);
-            $key   = trim($key);
-            $value = trim($value);
-            putenv("$key=$value");
-            $_ENV[$key] = $value;
+            putenv(trim($key) . '=' . trim($value));
         }
     }
 }
 
-define('APP_ENV', getenv('APP_ENV') ?: 'development');
-define('API_BASE_URL', getenv('PROD_API_URL') ?: 'https://inventory.pms.web.id');
-define('DEV_API_URL', getenv('DEV_API_URL') ?: 'http://localhost/inventory/public');
+define('API_BASE_URL', getenv('API_BASE_URL') ?: 'https://inventory.pms.web.id');
